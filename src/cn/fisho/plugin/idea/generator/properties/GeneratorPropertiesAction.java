@@ -72,6 +72,12 @@ public class GeneratorPropertiesAction extends AnAction {
         Set<String> innerFields = Arrays.stream(propertiesClass.getAllFields()).map(f -> f.getName()).collect(Collectors.toSet());
 
         for (PsiField f: fields){
+
+            //skip upper
+            if(f.getName().charAt(0) < ASCII_A){
+                continue;
+            }
+
             final String name = captureName(f.getName());
             if (innerFields.contains(name)){
                 continue;
