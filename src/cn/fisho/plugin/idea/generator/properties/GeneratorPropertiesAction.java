@@ -1,9 +1,6 @@
 package cn.fisho.plugin.idea.generator.properties;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.*;
@@ -28,14 +25,15 @@ public class GeneratorPropertiesAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+
         this.generatorProperties(this.getPsiMethodFromContext(e));
     }
 
-    private void generatorProperties(final PsiClass psiMethod){
-        (new WriteCommandAction.Simple(psiMethod.getProject(), new PsiFile[]{psiMethod.getContainingFile()}) {
+    private void generatorProperties(final PsiClass psiClass){
+        (new WriteCommandAction.Simple(psiClass.getProject(), new PsiFile[]{psiClass.getContainingFile()}) {
             @Override
             protected void run() throws Throwable {
-                GeneratorPropertiesAction.this.createProperties(psiMethod);
+                GeneratorPropertiesAction.this.createProperties(psiClass);
             }
         }).execute();
     }
@@ -48,7 +46,7 @@ public class GeneratorPropertiesAction extends AnAction {
             return;
         }
 
-        PsiClass[] innerClasses = psiClass.getAllInnerClasses();
+        PsiClass[] innerClasses = psiClass.getInnerClasses();
 
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiClass.getProject());
 
@@ -103,12 +101,12 @@ public class GeneratorPropertiesAction extends AnAction {
 
     private PsiClass getPsiMethodFromContext(AnActionEvent e) {
         PsiElement elementAt = this.getPsiElement(e);
-        return elementAt == null ? null : (PsiClass) PsiTreeUtil.getParentOfType(elementAt, PsiClass.class);
+        return elementAt == null ? null : PsiTreeUtil.getParentOfType(elementAt, PsiClass.class);
     }
 
     private PsiElement getPsiElement(AnActionEvent e) {
-        PsiFile psiFile = (PsiFile) e.getData(LangDataKeys.PSI_FILE);
-        Editor editor = (Editor) e.getData(PlatformDataKeys.EDITOR);
+        PsiFile psiFile = e.getData(LangDataKeys.PSI_FILE);
+        Editor editor = e.getData(PlatformDataKeys.EDITOR);
         if (psiFile != null && editor != null) {
             int offset = editor.getCaretModel().getOffset();
             return psiFile.findElementAt(offset);
@@ -116,7 +114,15 @@ public class GeneratorPropertiesAction extends AnAction {
             e.getPresentation().setEnabled(false);
             return null;
         }
+
     }
+
+//    final Editor editor = e.getData(CommonDataKeys.EDITOR);
+//        if (editor != null) {
+//        final PsiElement currentElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
+//        final PsiClass enclosingClass = PsiTreeUtil.getParentOfType(currentElement, PsiClass.class);
+//        return enclosingClass;
+//    }
 
 
 }
